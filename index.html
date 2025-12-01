@@ -1,77 +1,65 @@
 <!DOCTYPE html>
 <html lang="da">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>UngRejs Guide</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              neon: {
-                pink: '#ff00ff',
-                blue: '#00ffff',
-                purple: '#bf00ff',
-                green: '#39ff14',
-              },
-              dark: {
-                bg: '#0f0f1a',
-                card: '#1a1a2e',
-              }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UngRejs Guide</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React + ReactDOM (browser version) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- React Markdown -->
+  <script crossorigin src="https://unpkg.com/react-markdown/umd/react-markdown.min.js"></script>
+
+  <!-- Lucide icons -->
+  <script type="module">
+    import * as lucide from "https://unpkg.com/lucide-react/dist/esm/lucide-react.js";
+    window.lucideIcons = lucide;
+  </script>
+
+  <!-- Tailwind config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neon: {
+              pink: "#ff00ff",
+              blue: "#00ffff",
+              purple: "#bf00ff",
+              green: "#39ff14",
             },
-            animation: {
-              'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              'glow': 'glow 2s ease-in-out infinite alternate',
+            dark: {
+              bg: "#0f0f1a",
+              card: "#1a1a2e",
             },
-            keyframes: {
-              glow: {
-                '0%': { boxShadow: '0 0 5px #bf00ff, 0 0 10px #bf00ff' },
-                '100%': { boxShadow: '0 0 20px #00ffff, 0 0 30px #00ffff' },
-              }
-            }
           },
         },
-      }
-    </script>
-    <style>
-      body {
-        background-color: #0f0f1a;
-        color: #ffffff;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-      /* Custom scrollbar for webkit */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1a1a2e; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #bf00ff; 
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #ff00ff; 
-      }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #0f0f1a;
+      color: white;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+  </style>
 </head>
-  <body>
-    <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
+
+<body>
+  <div id="root"></div>
+
+  <!-- Load order matters -->
+  <script src="./types.js"></script>
+  <script src="./neonbutton.js"></script>
+  <script src="./geminiservice.js"></script>
+  <script src="./app.js"></script>
+  <script src="./main.js"></script>
 </body>
 </html>
