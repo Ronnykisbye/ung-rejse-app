@@ -1,0 +1,930 @@
+🤓  Klart — her får du én enkelt fil (én index.html), som du bare kan gemme på din PC/telefon og åbne i en browser. Så får du en flot neon-tech webapp (mobil + PC) der:
+Du skriver by (fx “Berlin”, “Paris”, “Kaunas”)
+Du vælger dato + tidspunkt (hvornår du er der)
+App’en finder automatisk:
+lokal tid i byen
+vejret (times/døgn) via Open-Meteo (gratis, ingen nøgle)
+top seværdigheder i/omkring byen via Wikidata/Wikipedia (gratis, ingen nøgle)
+smarte forslag baseret på tidspunkt (morgen/eftermiddag/aften)
+Gem filen som: index.html
+Åbn den i Chrome/Edge/Safari — så kører den.
+Kopier kode
+Html
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CityPulse • Tech Travel Mini-App</title>
+
+  <!-- ===== AFSNIT 01 – Base CSS (Neon-Tech) ===== -->
+  <style>
+    :root{
+      --bg: #0B0F1A;
+      --panel: #12172A;
+      --panel2: #0F1426;
+      --line: rgba(255,255,255,.08);
+      --text: #E8EBF1;
+      --muted: #9AA0B4;
+      --cyan: #00E5FF;
+      --violet: #7C7CFF;
+      --good: #40ff9a;
+      --warn: #ffd44d;
+      --bad: #ff4d7d;
+
+      --r: 18px;
+      --shadow: 0 12px 40px rgba(0,0,0,.45);
+      --glow: 0 0 16px rgba(0,229,255,.25), 0 0 40px rgba(124,124,255,.12);
+      --glow2: 0 0 14px rgba(124,124,255,.22);
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% 0%, rgba(0,229,255,.08), transparent 55%),
+        radial-gradient(1000px 600px at 85% 20%, rgba(124,124,255,.09), transparent 60%),
+        radial-gradient(900px 600px at 50% 105%, rgba(64,255,154,.05), transparent 55%),
+        var(--bg);
+    }
+
+    a{ color: var(--cyan); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+
+    .wrap{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px 14px 40px;
+    }
+
+    /* ===== AFSNIT 02 – Header ===== */
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 240px;
+    }
+
+    .logo{
+      width: 44px; height:44px;
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(0,229,255,.9), rgba(124,124,255,.35) 55%, rgba(0,0,0,0) 70%),
+        linear-gradient(135deg, rgba(0,229,255,.18), rgba(124,124,255,.10));
+      border: 1px solid var(--line);
+      box-shadow: var(--glow);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .logo:after{
+      content:"";
+      position:absolute;
+      inset:-20%;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,.14), transparent);
+      transform: rotate(12deg);
+      animation: sweep 6s linear infinite;
+    }
+
+    @keyframes sweep{
+      0%{ transform: translateX(-55%) rotate(12deg); }
+      100%{ transform: translateX(55%) rotate(12deg); }
+    }
+
+    .brand h1{
+      margin:0;
+      font-size: 16px;
+      letter-spacing:.6px;
+      line-height:1.15;
+    }
+
+    .brand small{
+      display:block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .pillrow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .pill{
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      font-size: 12px;
+      color: var(--muted);
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .dot{
+      width:8px; height:8px; border-radius: 999px;
+      background: var(--cyan);
+      box-shadow: 0 0 10px rgba(0,229,255,.45);
+    }
+    .dot.v{ background: var(--violet); box-shadow: 0 0 10px rgba(124,124,255,.45); }
+    .dot.g{ background: var(--good); box-shadow: 0 0 10px rgba(64,255,154,.35); }
+
+    /* ===== AFSNIT 03 – Layout Grid ===== */
+    .grid{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap: 14px;
+      align-items:start;
+    }
+
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+      header{ flex-direction:column; align-items:stretch; }
+      .pillrow{ justify-content:flex-start; }
+    }
+
+    /* ===== AFSNIT 04 – Panels / Cards ===== */
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel .head{
+      padding: 14px 14px 12px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(18,23,42,.85), rgba(18,23,42,.45));
+    }
+
+    .panel .head h2{
+      margin:0;
+      font-size: 13px;
+      letter-spacing:.6px;
+      text-transform: uppercase;
+      color: rgba(232,235,241,.92);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .panel .head h2 span{
+      color: var(--muted);
+      font-weight: 500;
+      text-transform:none;
+      letter-spacing:0;
+      font-size:12px;
+    }
+
+    .panel .body{
+      padding: 14px;
+    }
+
+    /* ===== AFSNIT 05 – Inputs ===== */
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 10px 0 6px;
+    }
+
+    input[type="text"], input[type="datetime-local"]{
+      width:100%;
+      padding: 11px 12px;
+      border-radius: 14px;
+      background: rgba(11,15,26,.65);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--text);
+      outline:none;
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      transition: .15s ease;
+    }
+
+    input[type="text"]:focus, input[type="datetime-local"]:focus{
+      border-color: rgba(0,229,255,.45);
+      box-shadow: 0 0 0 3px rgba(0,229,255,.12);
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 420px){
+      .row{ grid-template-columns: 1fr; }
+    }
+
+    /* ===== AFSNIT 06 – Buttons (Mobile 2x2) ===== */
+    .btnGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr; /* 2x2 på mobil */
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .btn{
+      border: 1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(900px 200px at 15% 0%, rgba(0,229,255,.16), transparent 55%),
+        radial-gradient(900px 200px at 85% 0%, rgba(124,124,255,.14), transparent 60%),
+        rgba(255,255,255,.03);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 11px 12px;
+      font-weight: 600;
+      letter-spacing:.2px;
+      cursor:pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,.22);
+      transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px; /* finger-venlig */
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(0,229,255,.28);
+      box-shadow: 0 10px 30px rgba(0,0,0,.28), var(--glow2);
+      filter: brightness(1.03);
+    }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+
+    .btn.primary{
+      border-color: rgba(0,229,255,.35);
+      box-shadow: 0 10px 30px rgba(0,0,0,.28), var(--glow);
+    }
+
+    .btn.ghost{
+      background: rgba(255,255,255,.02);
+    }
+
+    /* På brede skærme kan knapper ligge i én række hvis man vil */
+    @media (min-width: 981px){
+      .btnGrid{ grid-template-columns: 1fr 1fr; } /* behold 2 kolonner, det ser “tech dashboard” ud */
+    }
+
+    /* ===== AFSNIT 07 – Status / Toast ===== */
+    .status{
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      line-height:1.35;
+    }
+    .status b{ color: var(--text); }
+    .badge{
+      font-size: 11px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,229,255,.08);
+      color: rgba(232,235,241,.92);
+      white-space: nowrap;
+    }
+    .badge.warn{ background: rgba(255,212,77,.10); }
+    .badge.bad{ background: rgba(255,77,125,.10); }
+
+    /* ===== AFSNIT 08 – Right side content blocks ===== */
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 980px){ .kpis{ grid-template-columns: 1fr; } }
+
+    .kpi{
+      padding: 14px;
+      border-radius: var(--r);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .kpi:before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      background:
+        radial-gradient(600px 240px at 10% 0%, rgba(0,229,255,.08), transparent 55%),
+        radial-gradient(600px 240px at 90% 0%, rgba(124,124,255,.08), transparent 55%);
+      pointer-events:none;
+    }
+    .kpi .label{ color: var(--muted); font-size: 12px; position:relative; }
+    .kpi .value{ font-size: 18px; font-weight: 800; margin-top: 6px; position:relative; }
+    .kpi .sub{ color: rgba(232,235,241,.72); font-size: 12px; margin-top: 6px; position:relative; }
+
+    .section{
+      margin-top: 14px;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 980px){ .cards{ grid-template-columns: 1fr; } }
+    @media (min-width: 981px) and (max-width: 1180px){ .cards{ grid-template-columns: repeat(2, 1fr); } }
+
+    .card{
+      border-radius: var(--r);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height: 120px;
+    }
+    .thumb{
+      height: 140px;
+      background: rgba(255,255,255,.03);
+      border-bottom: 1px solid var(--line);
+      position:relative;
+    }
+    .thumb img{
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+      filter: saturate(1.05) contrast(1.02);
+    }
+    .thumb .ph{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      color: rgba(232,235,241,.35);
+      font-size:12px;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+    }
+    .card .pad{
+      padding: 12px 12px 12px;
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+    }
+    .card h3{
+      margin:0;
+      font-size: 14px;
+      line-height:1.25;
+    }
+    .meta{
+      color: var(--muted);
+      font-size: 12px;
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+    .mini{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.02);
+    }
+
+    /* ===== AFSNIT 09 – Footer ===== */
+    footer{
+      margin-top: 16px;
+      color: rgba(154,160,180,.9);
+      font-size: 12px;
+      text-align:center;
+      opacity:.9;
+    }
+
+    .spin{
+      width: 14px; height:14px;
+      border-radius: 999px;
+      border: 2px solid rgba(0,229,255,.25);
+      border-top-color: rgba(0,229,255,.95);
+      animation: rot 0.8s linear infinite;
+    }
+    @keyframes rot{ to{ transform: rotate(360deg); } }
+
+    .hide{ display:none !important; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <!-- ===== AFSNIT 10 – Header UI ===== -->
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>CityPulse <span style="opacity:.55;">•</span> <span style="color:var(--cyan)">Neon-Tech</span></h1>
+          <small>By-Info på sekunder (mobil + PC) – uden login, uden nøgler</small>
+        </div>
+      </div>
+
+      <div class="pillrow">
+        <div class="pill"><span class="dot"></span> Live data: Geocode + vejr</div>
+        <div class="pill"><span class="dot v"></span> Seværdigheder: Wikidata</div>
+        <div class="pill"><span class="dot g"></span> Smart forslag efter tidspunkt</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- ===== AFSNIT 11 – Left Panel: Controls ===== -->
+      <section class="panel" id="controlPanel">
+        <div class="head">
+          <h2>Kontrol <span>skriv by + vælg tidspunkt</span></h2>
+        </div>
+        <div class="body">
+          <label for="city">By</label>
+          <input id="city" type="text" placeholder="Fx Paris, Berlin, Kaunas, København…" autocomplete="off" />
+
+          <div class="row">
+            <div>
+              <label for="when">Dato + tid (din tid)</label>
+              <input id="when" type="datetime-local" />
+            </div>
+            <div>
+              <label for="units">Enheder</label>
+              <input id="units" type="text" value="°C, km/t" readonly />
+            </div>
+          </div>
+
+          <div class="btnGrid" aria-label="Handlinger">
+            <button class="btn primary" id="btnGo">
+              <span id="goIcon">⚡</span> Kør
+            </button>
+            <button class="btn ghost" id="btnNow">
+              ⏱️ Nu
+            </button>
+            <button class="btn ghost" id="btnDemo">
+              ✨ Demo
+            </button>
+            <button class="btn ghost" id="btnReset">
+              🧼 Nulstil
+            </button>
+          </div>
+
+          <div class="status" id="statusBox">
+            <div class="badge" id="statusBadge">Klar</div>
+            <div id="statusText">
+              Skriv en by og tryk <b>Kør</b>. Jeg finder lokal tid, vejr og de bedste seværdigheder.
+            </div>
+          </div>
+
+          <div style="margin-top:12px; color:rgba(154,160,180,.9); font-size:12px; line-height:1.35;">
+            Tip: Skriv fx <b>“Tokyo”</b> eller <b>“Wrocław”</b> – app’en finder selv koordinater og tidszone.
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== AFSNIT 12 – Right Side: Output ===== -->
+      <main>
+        <section class="kpis">
+          <div class="kpi">
+            <div class="label">By & land</div>
+            <div class="value" id="kpiCity">—</div>
+            <div class="sub" id="kpiCoords">—</div>
+          </div>
+
+          <div class="kpi">
+            <div class="label">Lokal tid i byen</div>
+            <div class="value" id="kpiLocalTime">—</div>
+            <div class="sub" id="kpiTimezone">—</div>
+          </div>
+
+          <div class="kpi">
+            <div class="label">Vejr (nærmeste time)</div>
+            <div class="value" id="kpiWeather">—</div>
+            <div class="sub" id="kpiWeatherSub">—</div>
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="head">
+            <h2>Smart forslag <span>baseret på tidspunktet du valgte</span></h2>
+          </div>
+          <div class="body" id="smartSuggestions">
+            <div style="color:var(--muted);">Kør en søgning, så kommer der forslag her.</div>
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="head">
+            <h2>Top seværdigheder <span>i/omkring byen</span></h2>
+          </div>
+          <div class="body">
+            <div id="attractionsLoading" class="status hide" style="margin:0 0 12px;">
+              <div class="badge">Henter</div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <div class="spin" aria-hidden="true"></div>
+                <div>Finder seværdigheder…</div>
+              </div>
+            </div>
+
+            <div class="cards" id="cards">
+              <div style="color:var(--muted);">Kør en søgning, så listes seværdigheder her.</div>
+            </div>
+
+            <div style="margin-top:12px; font-size:12px; color:rgba(154,160,180,.95); line-height:1.35;">
+              Mangler du “events”? Tryk på en seværdighed og kig på området – eller brug dette link:
+              <span id="eventsLinkWrap"></span>
+            </div>
+          </div>
+        </section>
+
+        <footer>
+          CityPulse bruger gratis offentlige datakilder (Open-Meteo + Wikidata/Wikipedia). Ingen login. Ingen tracking.
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <!-- ===== AFSNIT 13 – App Logic (JS) ===== -->
+  <script>
+    // ============================================================
+    // AFSNIT 13.1 – Helpers
+    // ============================================================
+    const $ = (sel) => document.querySelector(sel);
+
+    function setStatus(type, badgeText, msg){
+      const badge = $("#statusBadge");
+      const box = $("#statusBox");
+      badge.textContent = badgeText;
+
+      badge.classList.remove("warn","bad");
+      if(type === "warn") badge.classList.add("warn");
+      if(type === "bad") badge.classList.add("bad");
+
+      $("#statusText").innerHTML = msg || "";
+      box.scrollIntoView({block:"nearest", behavior:"smooth"});
+    }
+
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+    function safeText(s){
+      return (s ?? "").toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+    }
+
+    function fmtCoord(n){
+      const v = Number(n);
+      if(!Number.isFinite(v)) return "—";
+      return v.toFixed(4);
+    }
+
+    function urlEncode(s){ return encodeURIComponent(s ?? ""); }
+
+    // ============================================================
+    // AFSNIT 13.2 – Default datetime (nu)
+    // ============================================================
+    function setNow(){
+      const d = new Date();
+      // datetime-local forventer lokal tid, uden timezone
+      const pad = (x) => String(x).padStart(2,"0");
+      const val =
+        d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()) +
+        "T" + pad(d.getHours()) + ":" + pad(d.getMinutes());
+      $("#when").value = val;
+    }
+
+    // ============================================================
+    // AFSNIT 13.3 – Smart suggestions (simple but useful)
+    // ============================================================
+    function buildSuggestions(hourLocal){
+      // time buckets
+      const h = clamp(hourLocal, 0, 23);
+
+      let label = "Plan";
+      let ideas = [];
+
+      if(h >= 6 && h < 11){
+        label = "Morgen";
+        ideas = [
+          "Start med en café i nærheden af et kendt område (gåtur + kaffe).",
+          "Vælg en top-seværdighed først – der er færre mennesker tidligt.",
+          "Tjek et marked eller en park, hvis vejret er godt."
+        ];
+      } else if(h >= 11 && h < 16){
+        label = "Midt på dagen";
+        ideas = [
+          "Museer og indendørs seværdigheder passer godt her.",
+          "Spis frokost tæt på den seværdighed du vil se bagefter.",
+          "Tag 1–2 ‘ikon’-steder, og gem resten til senere."
+        ];
+      } else if(h >= 16 && h < 21){
+        label = "Eftermiddag/aften";
+        ideas = [
+          "Gå efter udsigt/solnedgang: udsigtspunkt, havn, bro eller skyline.",
+          "Find et område med street food eller lokal restaurant-kvarter.",
+          "Planlæg 1 oplevelse + 1 afslappet aktivitet (bar, promenade, byliv)."
+        ];
+      } else {
+        label = "Sen aften/nat";
+        ideas = [
+          "Hold det enkelt: et hyggeligt område med lys og stemning.",
+          "Vælg noget tæt på dit overnatningssted (transport er lettere).",
+          "Hvis du vil ud: gå efter kendte områder fremfor små sidegader."
+        ];
+      }
+
+      const html = `
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <span class="badge"> ${label}</span>
+          <span style="color:var(--muted); font-size:12px;">Forslagene tilpasser sig dit valgte tidspunkt</span>
+        </div>
+        <ul style="margin:10px 0 0; padding-left:18px; color:rgba(232,235,241,.92); line-height:1.45;">
+          ${ideas.map(x => `<li>${safeText(x)}</li>`).join("")}
+        </ul>
+      `;
+      $("#smartSuggestions").innerHTML = html;
+    }
+
+    // ============================================================
+    // AFSNIT 13.4 – Open-Meteo Geocoding (gratis, ingen nøgle)
+    // ============================================================
+    async function geocodeCity(city){
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=5&language=da&format=json`;
+      const r = await fetch(url);
+      if(!r.ok) throw new Error("Geocoding fejlede");
+      const data = await r.json();
+      if(!data || !data.results || !data.results.length) return null;
+
+      // vælg “bedste” resultat: helst by (feature_code PPL), ellers første
+      const best = data.results.find(x => String(x.feature_code||"").startsWith("PPL")) || data.results[0];
+      return best;
+    }
+
+    // ============================================================
+    // AFSNIT 13.5 – Open-Meteo Forecast (time + dag)
+    // ============================================================
+    async function fetchWeather(lat, lon){
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,cloudcover,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&forecast_days=3&timezone=auto`;
+      const r = await fetch(url);
+      if(!r.ok) throw new Error("Vejr hentning fejlede");
+      const data = await r.json();
+      return data;
+    }
+
+    function pickNearestHour(weatherData, targetDate){
+      const times = weatherData?.hourly?.time;
+      if(!times || !times.length) return null;
+
+      // tiderne er i den timezone, som API returnerer
+      // targetDate er en Date i brugerens lokale timezone – vi kan vælge "nærmeste" ved at sammenligne timestamps
+      // Vi konverterer hourly ISO-strings til Date og finder mindst distance.
+      let bestIdx = 0;
+      let bestDiff = Infinity;
+
+      for(let i=0; i<times.length; i++){
+        const t = new Date(times[i]);
+        const diff = Math.abs(t.getTime() - targetDate.getTime());
+        if(diff < bestDiff){
+          bestDiff = diff;
+          bestIdx = i;
+        }
+      }
+      return {
+        idx: bestIdx,
+        time: new Date(times[bestIdx]),
+        temp: weatherData.hourly.temperature_2m?.[bestIdx],
+        wind: weatherData.hourly.windspeed_10m?.[bestIdx],
+        cloud: weatherData.hourly.cloudcover?.[bestIdx],
+        rain: weatherData.hourly.precipitation?.[bestIdx]
+      };
+    }
+
+    // ============================================================
+    // AFSNIT 13.6 – Wikidata SPARQL: seværdigheder nær byen
+    // ============================================================
+    async function fetchAttractions(lat, lon, limit=9){
+      // Vi henter ting i nærheden der typisk er turistattraktioner / seværdigheder
+      // query.wikidata.org understøtter CORS og gratis adgang.
+      const query = `
+        SELECT ?item ?itemLabel ?distance ?image ?coord WHERE {
+          SERVICE wikibase:around {
+            ?item wdt:P625 ?coord .
+            bd:serviceParam wikibase:center "Point(${lon} ${lat})"^^geo:wktLiteral .
+            bd:serviceParam wikibase:radius "20" .
+            bd:serviceParam wikibase:distance ?distance .
+          }
+          OPTIONAL { ?item wdt:P18 ?image . }
+          ?item wdt:P31/wdt:P279* wd:Q570116 .  # tourist attraction
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "da,en". }
+        }
+        ORDER BY ASC(?distance)
+        LIMIT ${limit}
+      `;
+
+      const url = "https://query.wikidata.org/sparql?format=json&query=" + encodeURIComponent(query);
+      const r = await fetch(url, { headers: { "Accept":"application/sparql-results+json" }});
+      if(!r.ok) throw new Error("Wikidata fejlede");
+      const data = await r.json();
+      return data?.results?.bindings ?? [];
+    }
+
+    function wikimediaFileToUrl(fileUrl){
+      // fileUrl er typisk en URL til wikimedia fil i sparql resultaterne
+      // vi kan bruge den direkte – ellers fallback.
+      return fileUrl || "";
+    }
+
+    // ============================================================
+    // AFSNIT 13.7 – Render attractions
+    // ============================================================
+    function renderAttractions(list, cityName){
+      const cards = $("#cards");
+
+      if(!list || !list.length){
+        cards.innerHTML = `<div style="color:var(--muted);">Ingen seværdigheder fundet via Wikidata lige nu. Prøv en større by, eller skriv bynavnet på engelsk.</div>`;
+        return;
+      }
+
+      cards.innerHTML = list.map(b => {
+        const label = b.itemLabel?.value || "Seværdighed";
+        const dist = b.distance?.value ? Number(b.distance.value) : null;
+        const img = b.image?.value ? wikimediaFileToUrl(b.image.value) : "";
+        const itemUrl = b.item?.value || "#";
+
+        const km = dist != null ? (dist/1000).toFixed(1) : "—";
+        const mapQ = urlEncode(label + " " + cityName);
+
+        return `
+          <article class="card">
+            <div class="thumb">
+              ${img ? `<img src="${safeText(img)}" alt="${safeText(label)}" loading="lazy">` : `<div class="ph">Ingen billede</div>`}
+            </div>
+            <div class="pad">
+              <h3><a href="${safeText(itemUrl)}" target="_blank" rel="noopener">${safeText(label)}</a></h3>
+              <div class="meta">
+                <span class="mini">📍 ${km} km</span>
+                <span class="mini"><a href="https://www.google.com/maps/search/?api=1&query=${mapQ}" target="_blank" rel="noopener">Kort</a></span>
+                <span class="mini"><a href="https://da.wikipedia.org/w/index.php?search=${urlEncode(label)}" target="_blank" rel="noopener">Wiki</a></span>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    // ============================================================
+    // AFSNIT 13.8 – Main run flow
+    // ============================================================
+    async function run(){
+      const city = ($("#city").value || "").trim();
+      if(!city){
+        setStatus("warn","Mangler by","Skriv en <b>by</b> først – fx <b>Paris</b> eller <b>Berlin</b>.");
+        return;
+      }
+
+      const whenVal = $("#when").value;
+      if(!whenVal){
+        setStatus("warn","Mangler tid","Vælg <b>dato + tid</b> – eller tryk <b>Nu</b>.");
+        return;
+      }
+
+      // UI: loading
+      $("#goIcon").textContent = "⏳";
+      $("#btnGo").disabled = true;
+
+      try{
+        setStatus("", "Henter", `Finder data for <b>${safeText(city)}</b>…`);
+
+        // 1) geocode
+        const geo = await geocodeCity(city);
+        if(!geo){
+          setStatus("bad","Ingen match", `Jeg kunne ikke finde byen <b>${safeText(city)}</b>. Prøv et andet navn (evt. engelsk stavning).`);
+          return;
+        }
+
+        const lat = geo.latitude;
+        const lon = geo.longitude;
+        const pretty = `${geo.name}${geo.admin1 ? ", " + geo.admin1 : ""}${geo.country ? ", " + geo.country : ""}`;
+        $("#kpiCity").textContent = pretty;
+        $("#kpiCoords").textContent = `Lat ${fmtCoord(lat)} • Lon ${fmtCoord(lon)}`;
+
+        // events link
+        const eventsSearch = `https://www.google.com/search?q=${urlEncode("events " + geo.name + " " + (geo.country||""))}`;
+        $("#eventsLinkWrap").innerHTML = `<a href="${eventsSearch}" target="_blank" rel="noopener">Søg events i ${safeText(geo.name)}</a>`;
+
+        // 2) weather (inkl timezone)
+        const weather = await fetchWeather(lat, lon);
+        const tz = weather.timezone || "—";
+        $("#kpiTimezone").textContent = tz;
+
+        // 3) local time in city
+        const userChosen = new Date(whenVal); // din lokale tid
+        // local time in city (approx) via Intl with timezone from Open-Meteo
+        let cityTimeStr = "—";
+        let cityHour = userChosen.getHours();
+        try{
+          const fmt = new Intl.DateTimeFormat("da-DK", { timeZone: tz, hour:"2-digit", minute:"2-digit", weekday:"short", day:"2-digit", month:"short" });
+          cityTimeStr = fmt.format(userChosen);
+          // udtræk time for suggestions
+          const fmtHour = new Intl.DateTimeFormat("da-DK", { timeZone: tz, hour:"2-digit" }).format(userChosen);
+          cityHour = Number(fmtHour);
+        }catch(e){
+          // fallback
+          cityTimeStr = userChosen.toLocaleString("da-DK");
+        }
+        $("#kpiLocalTime").textContent = cityTimeStr;
+
+        // 4) nearest hourly weather
+        const picked = pickNearestHour(weather, userChosen);
+        if(picked){
+          const t = picked.time;
+          const tStr = t.toLocaleString("da-DK", { hour:"2-digit", minute:"2-digit" });
+          const temp = (picked.temp != null) ? `${Math.round(picked.temp)}°C` : "—";
+          const wind = (picked.wind != null) ? `${Math.round(picked.wind)} km/t` : "—";
+          const cloud = (picked.cloud != null) ? `${Math.round(picked.cloud)}%` : "—";
+          const rain = (picked.rain != null) ? `${picked.rain} mm` : "—";
+          $("#kpiWeather").textContent = temp;
+          $("#kpiWeatherSub").textContent = `${tStr} • Vind ${wind} • Skyer ${cloud} • Nedbør ${rain}`;
+        }else{
+          $("#kpiWeather").textContent = "—";
+          $("#kpiWeatherSub").textContent = "Kunne ikke hente time-data.";
+        }
+
+        // 5) suggestions
+        buildSuggestions(cityHour);
+
+        // 6) attractions
+        $("#attractionsLoading").classList.remove("hide");
+        const list = await fetchAttractions(lat, lon, 9);
+        renderAttractions(list, geo.name);
+
+        $("#attractionsLoading").classList.add("hide");
+
+        setStatus("", "Færdig", `Klar ✅ Data hentet for <b>${safeText(pretty)}</b>.`);
+
+      }catch(err){
+        console.error(err);
+        $("#attractionsLoading").classList.add("hide");
+        setStatus("bad","Fejl", `Noget gik galt. Prøv igen – eller prøv et andet bynavn.<br><span style="color:var(--muted); font-size:12px;">Detalje: ${safeText(err.message || err)}</span>`);
+      }finally{
+        $("#goIcon").textContent = "⚡";
+        $("#btnGo").disabled = false;
+      }
+    }
+
+    // ============================================================
+    // AFSNIT 13.9 – Buttons
+    // ============================================================
+    $("#btnGo").addEventListener("click", run);
+    $("#btnNow").addEventListener("click", () => { setNow(); setStatus("", "Klar", "Tid sat til <b>nu</b>. Tryk <b>Kør</b>."); });
+
+    $("#btnDemo").addEventListener("click", () => {
+      // Demo gæt: en storby, sjov og stabil
+      $("#city").value = "Berlin";
+      setNow();
+      setStatus("", "Demo", "Demo sat til <b>Berlin</b>. Tryk <b>Kør</b> for at se app’en i aktion.");
+    });
+
+    $("#btnReset").addEventListener("click", () => {
+      $("#city").value = "";
+      setNow();
+      $("#kpiCity").textContent = "—";
+      $("#kpiCoords").textContent = "—";
+      $("#kpiLocalTime").textContent = "—";
+      $("#kpiTimezone").textContent = "—";
+      $("#kpiWeather").textContent = "—";
+      $("#kpiWeatherSub").textContent = "—";
+      $("#smartSuggestions").innerHTML = `<div style="color:var(--muted);">Kør en søgning, så kommer der forslag her.</div>`;
+      $("#cards").innerHTML = `<div style="color:var(--muted);">Kør en søgning, så listes seværdigheder her.</div>`;
+      $("#eventsLinkWrap").innerHTML = "";
+      setStatus("", "Klar", "Nulstillet. Skriv en by og tryk <b>Kør</b>.");
+    });
+
+    // Enter i by-feltet = kør
+    $("#city").addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){ e.preventDefault(); run(); }
+    });
+
+    // ============================================================
+    // AFSNIT 13.10 – Init
+    // ============================================================
+    setNow();
+  </script>
+</body>
+</html>
+Hvis du vil have den endnu mere “nørden-tech” (fx theme toggle, sprogskift, offline-cache (PWA) og en menu i lag), så kan jeg udbygge filen — men den her version er allerede “bare åbne filen → app kører” og den ser skarp ud på både mobil og PC.
