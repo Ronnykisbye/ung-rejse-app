@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🍗 Julesteg-Master • Neon Planner</title>
+
+<!-- =========================================================
+     AFSNIT 01 – Neon UI
+     ========================================================= -->
+<style>
+:root{
+  --bg:#0b0f1a;
+  --line:rgba(255,255,255,.10);
+  --txt:#e8ebf1;
+  --muted:#9aa0b4;
+  --cyan:#00e5ff;
+  --vio:#7c7cff;
+  --ok:#40ff9a;
+  --warn:#ffd44d;
+  --bad:#ff4d7d;
+  --r:18px;
+  --shadow:0 14px 44px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  color:var(--txt);
+  background:
+    radial-gradient(1100px 520px at 10% 0, rgba(0,229,255,.10), transparent 60%),
+    radial-gradient(1000px 520px at 90% 18%, rgba(124,124,255,.10), transparent 62%),
+    radial-gradient(900px 520px at 50% 110%, rgba(64,255,154,.07), transparent 62%),
+    var(--bg);
+}
+
+.wrap{max-width:1120px;margin:auto;padding:16px 14px 40px}
+
+header{
+  display:flex; gap:12px; align-items:center; justify-content:space-between;
+  flex-wrap:wrap;
+}
+
+.brand{display:flex; gap:12px; align-items:center}
+.logo{
+  width:46px;height:46px;border-radius:14px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(0,229,255,.95), rgba(124,124,255,.45) 60%),
+    linear-gradient(135deg, rgba(0,229,255,.15), rgba(124,124,255,.10));
+  border:1px solid var(--line);
+  box-shadow:0 0 18px rgba(0,229,255,.28), 0 0 40px rgba(124,124,255,.12);
+  position:relative; overflow:hidden;
+}
+.logo:after{
+  content:""; position:absolute; inset:-25%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.14), transparent);
+  transform: rotate(12deg);
+  animation: sweep 6s linear infinite;
+}
+@keyframes sweep{
+  0%{ transform: translateX(-55%) rotate(12deg); }
+  100%{ transform: translateX(55%) rotate(12deg); }
+}
+
+h1{margin:0;font-size:18px;letter-spacing:.3px}
+.sub{margin-top:2px;font-size:12px;color:var(--muted);line-height:1.25}
+
+.pills{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+.pill{
+  font-size:12px;color:var(--muted);
+  padding:8px 10px;border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  backdrop-filter:blur(8px);
+  display:flex; align-items:center; gap:8px;
+}
+.dot{width:8px;height:8px;border-radius:999px;background:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,.45)}
+.dot.v{background:var(--vio);box-shadow:0 0 10px rgba(124,124,255,.45)}
+.dot.g{background:var(--ok);box-shadow:0 0 10px rgba(64,255,154,.35)}
+
+.grid{display:grid;grid-template-columns:390px 1fr;gap:14px;margin-top:14px}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.pills{justify-content:flex-start}}
+
+.panel{
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.head{
+  padding:14px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(18,23,42,.85), rgba(18,23,42,.45));
+}
+.head h2{
+  margin:0;
+  font-size:13px;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  display:flex; justify-content:space-between; gap:10px; align-items:center;
+}
+.head h2 span{font-size:12px;text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500}
+.body{padding:14px}
+
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+input,select{
+  width:100%;
+  padding:11px 12px;
+  border-radius:14px;
+  background:rgba(11,15,26,.70);
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--txt);
+}
+input:focus,select:focus{outline:none;border-color:rgba(0,229,255,.45);box-shadow:0 0 0 3px rgba(0,229,255,.12)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
+
+.btnGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.btn{
+  min-height:44px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--txt);
+  font-weight:800;
+  cursor:pointer;
+  background:
+    radial-gradient(900px 220px at 15% 0%, rgba(0,229,255,.16), transparent 58%),
+    radial-gradient(900px 220px at 85% 0%, rgba(124,124,255,.14), transparent 62%),
+    rgba(255,255,255,.03);
+  transition:transform .12s ease, filter .12s ease;
+}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+.btn:active{transform:translateY(0px) scale(.99)}
+.btn.primary{border-color:rgba(0,229,255,.36);box-shadow:0 0 16px rgba(0,229,255,.18)}
+
+.status{
+  margin-top:12px;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.03);
+  color:var(--muted);
+  display:flex; gap:10px; align-items:flex-start; line-height:1.35;
+}
+.badge{
+  font-size:11px;
+  padding:5px 9px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,229,255,.10);
+  color:rgba(232,235,241,.92);
+  white-space:nowrap;
+}
+.badge.ok{background:rgba(64,255,154,.12)}
+.badge.warn{background:rgba(255,212,77,.14)}
+.badge.bad{background:rgba(255,77,125,.14)}
+
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:980px){.kpis{grid-template-columns:1fr}}
+.kpi{
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:rgba(255,255,255,.03);
+  box-shadow:var(--shadow);
+  padding:14px;
+  position:relative; overflow:hidden;
+}
+.kpi:before{
+  content:""; position:absolute; inset:-1px;
+  background:
+    radial-gradient(600px 240px at 10% 0%, rgba(0,229,255,.08), transparent 55%),
+    radial-gradient(600px 240px at 90% 0%, rgba(124,124,255,.08), transparent 55%);
+  pointer-events:none;
+}
+.kpi .label{position:relative;font-size:12px;color:var(--muted)}
+.kpi .value{position:relative;font-size:18px;font-weight:900;margin-top:6px}
+.kpi .subtxt{position:relative;font-size:12px;color:rgba(232,235,241,.70);margin-top:6px;line-height:1.3}
+
+table{width:100%;border-collapse:collapse;border:1px solid rgba(255,255,255,.10);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02)}
+th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:rgba(232,235,241,.72);background:rgba(255,255,255,.03)}
+tr:last-child td{border-bottom:none}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+.small{font-size:12px;color:rgba(154,160,180,.95);line-height:1.35}
+ul{margin:10px 0 0;padding-left:18px}
+li{margin:6px 0}
+
+hr{border:none;border-top:1px solid rgba(255,255,255,.10);margin:12px 0}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Julesteg-Master <span style="opacity:.55">•</span> <span style="color:var(--cyan)">Neon Planner</span></h1>
+        <div class="sub">Planlæg And • Gås • Flæskesteg med faser, temperaturer og tider — så den rammer bordet</div>
+      </div>
+    </div>
+    <div class="pills">
+      <div class="pill"><span class="dot"></span> Baglæns fra sluttid</div>
+      <div class="pill"><span class="dot.v"></span> Fase-for-fase</div>
+      <div class="pill"><span class="dot.g"></span> Realisme-check</div>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- =========================================================
+         AFSNIT 02 – Input
+         ========================================================= -->
+    <section class="panel">
+      <div class="head">
+        <h2>Input <span>udfyld det du ved</span></h2>
+      </div>
+      <div class="body">
+
+        <label for="type">Type steg</label>
+        <select id="type">
+          <option value="duck">🦆 And (hel)</option>
+          <option value="goose">🪿 Gås (hel)</option>
+          <option value="pork">🐖 Flæskesteg (svær op)</option>
+        </select>
+
+        <label for="weight">Vægt (kg)</label>
+        <input id="weight" type="number" step="0.1" value="3.0" min="0.5" max="12">
+
+        <div class="row">
+          <div>
+            <label for="startTime">Starttid (ovn)</label>
+            <input id="startTime" type="datetime-local">
+          </div>
+          <div>
+            <label for="serveTime">Sluttid (på bordet)</label>
+            <input id="serveTime" type="datetime-local">
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="restMin">Hviletid (min)</label>
+            <input id="restMin" type="number" value="15" min="5" max="90">
+          </div>
+          <div>
+            <label for="mode">Model (tommelfingerregel)</label>
+            <select id="mode">
+              <option value="standard" selected>Standard (anbefalet)</option>
+              <option value="slow">Langsom (mere buffer)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btnGrid">
+          <button class="btn primary" id="btnPlan" type="button">🍽️ Lav plan</button>
+          <button class="btn" id="btnDemo" type="button">✨ Demo</button>
+          <button class="btn" id="btnNow" type="button">⏱️ Sæt sluttid = nu + 3t</button>
+          <button class="btn" id="btnReset" type="button">🧼 Nulstil</button>
+        </div>
+
+        <div class="status" id="statusBox">
+          <div class="badge" id="statusBadge">Klar</div>
+          <div id="statusText">
+            Tip: Sæt <b>sluttid</b> (på bordet) → app’en regner baglæns og giver dig faser + temperaturer.
+          </div>
+        </div>
+
+        <div class="small" style="margin-top:12px;">
+          <b>Sikkerhed:</b> Brug stegetermometer. For fjerkræ sigter mange efter <b>70–75°C</b> (74°C = “helt safe”).  
+          Flæskesteg ender typisk omkring <b>65–68°C</b> i centrum + hvile.
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =========================================================
+         AFSNIT 03 – Output
+         ========================================================= -->
+    <main>
+
+      <section class="kpis">
+        <div class="kpi">
+          <div class="label">Total ovntid</div>
+          <div class="value" id="kpiTotal">—</div>
+          <div class="subtxt" id="kpiTotalSub">—</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Temperaturer</div>
+          <div class="value" id="kpiTemps">—</div>
+          <div class="subtxt" id="kpiTempsSub">—</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Start i ovn</div>
+          <div class="value" id="kpiStart">—</div>
+          <div class="subtxt" id="kpiTimelineSub">—</div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top:14px;">
+        <div class="head">
+          <h2>Fase-plan <span>tid + temperatur + hvad du gør</span></h2>
+        </div>
+        <div class="body" id="planWrap">
+          <div class="small">Tryk <b>Lav plan</b>, så får du en tydelig fase-oversigt her.</div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top:14px;">
+        <div class="head">
+          <h2>Sådan gør du <span>kort forklaring (nem at følge)</span></h2>
+        </div>
+        <div class="body" id="howWrap">
+          <div class="small">Når du laver en plan, får du også en forklaring her, så det bliver let at forstå.</div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top:14px;">
+        <div class="head">
+          <h2>Termometer-mål <span>guide til at ramme rigtigt</span></h2>
+        </div>
+        <div class="body" id="tempGuide">
+          <ul class="small">
+            <li><b>And / gås:</b> mål tykkeste sted (bryst + inderlår). Sigt efter ca. <b>70–75°C</b> (74°C er “safe”).</li>
+            <li><b>Flæskesteg:</b> mål midt i stegen. Mange går efter <b>65–68°C</b> + hvile.</li>
+            <li><b>Tip:</b> Temperaturen stiger ofte lidt under hvile (carryover).</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="small" style="text-align:center;margin-top:12px;opacity:.9;">
+        Beregningerne er tommelfingerregler til planlægning. Det vigtigste for perfekt resultat er <b>termometer + øje på sprødheden</b>.
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- =========================================================
+     AFSNIT 04 – JavaScript (kvalitetssikret)
+     ========================================================= -->
+<script>
+/* =========================
+   AFSNIT 04.1 – Helpers
+   ========================= */
+const $ = (id) => document.getElementById(id);
+
+function pad(n){ return String(n).padStart(2,"0"); }
+function toLocalInputValue(d){
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
+}
+function parseDT(v){
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+function fmtDT(d){
+  return d.toLocaleString("da-DK",{weekday:"short",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+}
+function fmtHM(min){
+  const h = Math.floor(min/60);
+  const m = Math.round(min%60);
+  return h>0 ? `${h} t ${m} min` : `${m} min`;
+}
+function round5(min){ return Math.round(min/5)*5; }
+
+function setStatus(kind, badge, html){
+  const b = $("statusBadge");
+  b.className = "badge" + (kind ? (" "+kind) : "");
+  b.textContent = badge;
+  $("statusText").innerHTML = html;
+}
+
+/* =========================
+   AFSNIT 04.2 – Modeller
+   (faser summer korrekt)
+   ========================= */
+function getModel(type, weightKg, mode){
+  // Total ovntid (tommelfinger) + faser
+  // - Fjerkræ: main temp + boost til sidst
+  // - Flæskesteg: main temp + crisp fase til sidst
+  //
+  // Langsom mode giver mere buffer (mere tid i main-fasen)
+
+  let totalMin = 0;
+  let boostMin = 0;
+
+  if(type === "duck"){
+    // Standard: 40 min/kg + 10
+    totalMin = weightKg*40 + 10;
+    if(mode === "slow") totalMin = weightKg*50 + 15;
+    boostMin = 20;
+  }
+
+  if(type === "goose"){
+    // Lidt langsommere end and
+    totalMin = weightKg*45 + 20;
+    if(mode === "slow") totalMin = weightKg*55 + 25;
+    boostMin = 25;
+  }
+
+  if(type === "pork"){
+    // Flæskesteg (meget brugt tommelfinger): ca. 60 min/kg
+    totalMin = weightKg*60;
+    if(mode === "slow") totalMin = weightKg*70;
+    boostMin = 20; // sprød svær / grill
+  }
+
+  totalMin = Math.max(45, round5(totalMin));
+
+  // Sørg for at main-fasen ikke bliver negativ
+  boostMin = Math.min(boostMin, Math.max(10, totalMin - 20));
+  const mainMin = Math.max(10, totalMin - boostMin);
+
+  // Split main i A/B (vend halvvejs for fjerkræ)
+  const sideA = Math.floor(mainMin/2);
+  const sideB = mainMin - sideA;
+
+  // Temperaturer + tekst
+  let temps = {};
+  if(type === "duck"){
+    temps = {
+      main: "160°C varmluft (180°C alm.)",
+      boost: "220–230°C varmluft (sprødhed)"
+    };
+  }
+  if(type === "goose"){
+    temps = {
+      main: "170°C varmluft (190°C alm.)",
+      boost: "230°C varmluft (sprødhed)"
+    };
+  }
+  if(type === "pork"){
+    temps = {
+      main: "180°C (alm. ovn)",
+      boost: "240–250°C / grill (sprød svær)"
+    };
+  }
+
+  return { totalMin, boostMin, mainMin, sideA, sideB, temps };
+}
+
+/* =========================
+   AFSNIT 04.3 – Planlægning
+   ========================= */
+function buildPlan(){
+  const type = $("type").value;
+  const weightKg = Number($("weight").value);
+  const restMin = Number($("restMin").value);
+  const mode = $("mode").value;
+
+  const startDT = $("startTime").value ? parseDT($("startTime").value) : null;
+  const serveDT = $("serveTime").value ? parseDT($("serveTime").value) : null;
+
+  if(!Number.isFinite(weightKg) || weightKg <= 0){
+    setStatus("warn","Mangler","Indtast en gyldig <b>vægt (kg)</b>.");
+    return;
+  }
+  if(!Number.isFinite(restMin) || restMin < 5){
+    setStatus("warn","Mangler","Indtast en realistisk <b>hviletid</b> (min. 5).");
+    return;
+  }
+  if(!startDT && !serveDT){
+    setStatus("warn","Mangler","Udfyld mindst <b>starttid</b> eller <b>sluttid (på bordet)</b>.");
+    return;
+  }
+
+  const m = getModel(type, weightKg, mode);
+
+  // ServeDT = på bordet (efter hvile)
+  // Ovn slutter = serveDT - hvile
+  let cookEndDT = serveDT ? new Date(serveDT.getTime() - restMin*60000) : null;
+  let cookStartDT = startDT ? new Date(startDT) : null;
+
+  // Hvis start mangler: regn baglæns
+  if(!cookStartDT && cookEndDT){
+    cookStartDT = new Date(cookEndDT.getTime() - m.totalMin*60000);
+    $("startTime").value = toLocalInputValue(cookStartDT);
+  }
+
+  // Hvis sluttid mangler: regn frem
+  if(!serveDT && cookStartDT){
+    cookEndDT = new Date(cookStartDT.getTime() + m.totalMin*60000);
+    const newServe = new Date(cookEndDT.getTime() + restMin*60000);
+    $("serveTime").value = toLocalInputValue(newServe);
+  }
+
+  const finalServeDT = $("serveTime").value ? parseDT($("serveTime").value) : null;
+  const finalCookEndDT = new Date(finalServeDT.getTime() - restMin*60000);
+
+  // Realisme-check: hvis bruger har begge tider, tjek om ovntid matcher model
+  let warn = "";
+  if(startDT && serveDT){
+    const availableCookMin = (finalCookEndDT.getTime() - cookStartDT.getTime())/60000;
+    const diff = Math.round(availableCookMin - m.totalMin);
+    if(Math.abs(diff) > 10){
+      warn = `⚠️ Din plan afviger <b>${Math.abs(diff)} min</b> fra modellen. Brug termometer og justér hvis nødvendigt.`;
+      setStatus("warn","Plan + advarsel", warn);
+    } else {
+      setStatus("ok","Plan klar","Planen matcher modellen ✅ Følg faserne og tjek kernetemp til sidst.");
+    }
+  } else {
+    setStatus("ok","Plan klar","Planen er lavet ✅ Følg faserne og tjek kernetemp til sidst.");
+  }
+
+  // Byg tider til faser (slutboost sidst)
+  const boostStartDT = new Date(finalCookEndDT.getTime() - m.boostMin*60000);
+
+  // Main faser starter ved cookStartDT og slutter ved boostStartDT
+  const sideAEndDT = new Date(cookStartDT.getTime() + m.sideA*60000);
+  const sideBEndDT = new Date(sideAEndDT.getTime() + m.sideB*60000);
+
+  // KPI
+  $("kpiTotal").textContent = fmtHM(m.totalMin);
+  $("kpiTotalSub").textContent = `Main: ${fmtHM(m.mainMin)} • Boost: ${fmtHM(m.boostMin)} • Hvile: ${fmtHM(restMin)}`;
+  $("kpiTemps").textContent = `${m.temps.main.split(" ")[0]} → ${m.temps.boost.split(" ")[0]}`;
+  $("kpiTempsSub").textContent = `Main: ${m.temps.main} • Boost: ${m.temps.boost}`;
+  $("kpiStart").textContent = fmtDT(cookStartDT);
+  $("kpiTimelineSub").textContent = `Ud af ovn: ${fmtDT(finalCookEndDT)} • På bordet: ${fmtDT(finalServeDT)}`;
+
+  // Render fase-tabel (med tydelige forklaringer)
+  const isPork = (type === "pork");
+  const sideAText = isPork ? "Stegning (svær op)" : "Fase A (bryst ned / fedt smelter)";
+  const sideBText = isPork ? "Stegning fortsat" : "Fase B (bryst op / gennemstegning)";
+  const flipText  = isPork ? "Ingen vending" : "Vend (bryst op)";
+  const boostText = isPork ? "Sprød svær (høj varme / grill)" : "Sprød skind-boost (høj varme)";
+
+  let rows = `
+    <table>
+      <thead>
+        <tr>
+          <th>Tid</th>
+          <th>Fase</th>
+          <th>Temp</th>
+          <th>Varighed</th>
+          <th>Hvad gør du?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">${fmtDT(cookStartDT)}</td>
+          <td><b>${sideAText}</b></td>
+          <td>${m.temps.main}</td>
+          <td class="mono">${fmtHM(m.sideA)}</td>
+          <td class="small">${isPork
+            ? "Sørg for at sværen er ridsset helt ned til fedtet og gnid salt godt ind i alle ridser."
+            : "Start ofte med bryst ned, så fedt smelter og skind kan blive sprødt senere."
+          }</td>
+        </tr>
+
+        <tr>
+          <td class="mono">${fmtDT(sideAEndDT)}</td>
+          <td><b>${isPork ? sideBText : flipText}</b></td>
+          <td>${m.temps.main}</td>
+          <td class="mono">${fmtHM(m.sideB)}</td>
+          <td class="small">${isPork
+            ? "Hold øje med sky/fedt. Tilføj lidt vand i bradepanden hvis det tørrer ud."
+            : "Vend til bryst op. Øs evt. med skyen og hæld overskydende fedt fra."
+          }</td>
+        </tr>
+
+        <tr>
+          <td class="mono">${fmtDT(boostStartDT)}</td>
+          <td><b>${boostText}</b></td>
+          <td>${m.temps.boost}</td>
+          <td class="mono">${fmtHM(m.boostMin)}</td>
+          <td class="small">${isPork
+            ? "Skru op eller brug grill. Hold øje hvert 2.–3. minut så sværen ikke brænder."
+            : "Skru op til sidst for sprødhed. Hold øje, især hvis honning/glasering bruges."
+          }</td>
+        </tr>
+
+        <tr>
+          <td class="mono">${fmtDT(finalCookEndDT)}</td>
+          <td><b>Ud af ovn</b></td>
+          <td>—</td>
+          <td class="mono">0 min</td>
+          <td class="small">Tjek kernetemperatur med termometer. Dæk let med folie (ikke tæt).</td>
+        </tr>
+
+        <tr>
+          <td class="mono">${fmtDT(new Date(finalCookEndDT.getTime() + restMin*60000))}</td>
+          <td><b>Hvile</b></td>
+          <td>—</td>
+          <td class="mono">${fmtHM(restMin)}</td>
+          <td class="small">Kødsaften fordeler sig. Du får saftigere resultat og pænere udskæring.</td>
+        </tr>
+
+        <tr>
+          <td class="mono">${fmtDT(finalServeDT)}</td>
+          <td><b>På bordet</b></td>
+          <td>—</td>
+          <td class="mono">—</td>
+          <td class="small">Serveringstid (dit mål).</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+  $("planWrap").innerHTML = rows;
+
+  // Render “Sådan gør du” (forklaring)
+  $("howWrap").innerHTML = buildHowText(type, m, restMin);
+}
+
+function buildHowText(type, m, restMin){
+  if(type === "duck"){
+    return `
+      <div class="small">
+        <span class="badge ok">And</span>
+        <ul>
+          <li><b>Klargør:</b> tør skindet godt. Salt generøst (hjælper sprødhed). Læg anden på rist over bradepande med lidt vand.</li>
+          <li><b>Fase A (${fmtHM(m.sideA)}):</b> ${m.temps.main}. Start med <b>bryst ned</b> → fedtet smelter og skindet bliver lettere sprødt senere.</li>
+          <li><b>Vend:</b> efter fase A vender du til <b>bryst op</b>. Hæld evt. overskydende fedt fra og øs med skyen.</li>
+          <li><b>Fase B (${fmtHM(m.sideB)}):</b> fortsæt ved samme temperatur for at gennemstege.</li>
+          <li><b>Boost (${fmtHM(m.boostMin)}):</b> ${m.temps.boost} til sidst → sprødt skind. Hold øje.</li>
+          <li><b>Hvile (${restMin} min):</b> tag ud, tjek kernetemp, og lad hvile før udskæring.</li>
+        </ul>
+        <hr>
+        <b>Termometer:</b> Mål bryst + inderlår. Mange går efter <b>70–75°C</b> (74°C = helt safe).
+      </div>
+    `;
+  }
+
+  if(type === "goose"){
+    return `
+      <div class="small">
+        <span class="badge ok">Gås</span>
+        <ul>
+          <li><b>Klargør:</b> tør skindet. Salt godt. Gås afgiver meget fedt → brug bradepande og hæld fra undervejs.</li>
+          <li><b>Fase A (${fmtHM(m.sideA)}):</b> ${m.temps.main}. Start bryst ned for at hjælpe fedtafsmeltning.</li>
+          <li><b>Vend:</b> efter fase A vender du bryst op. Øs med skyen.</li>
+          <li><b>Fase B (${fmtHM(m.sideB)}):</b> fortsæt ved samme temperatur.</li>
+          <li><b>Boost (${fmtHM(m.boostMin)}):</b> ${m.temps.boost} → sprødhed. Hold øje, fordi gås kan brune hurtigt.</li>
+          <li><b>Hvile (${restMin} min):</b> gør udskæring nemmere og kødet saftigere.</li>
+        </ul>
+        <hr>
+        <b>Termometer:</b> Sigt efter ca. <b>75°C</b> i inderlår/tykkeste sted.
+      </div>
+    `;
+  }
+
+  // Pork
+  return `
+    <div class="small">
+      <span class="badge ok">Flæskesteg</span>
+      <ul>
+        <li><b>Klargør:</b> ridser i svær skal gå gennem sværen ned til fedtet (ikke i kødet). Salt ned i alle ridser.</li>
+        <li><b>Main (${fmtHM(m.mainMin)}):</b> ${m.temps.main}. Svær op. Pas på at bradepanden ikke tørrer helt ud.</li>
+        <li><b>Sprød svær (${fmtHM(m.boostMin)}):</b> ${m.temps.boost}. Hold øje tæt (kan gå fra sprød til brændt hurtigt).</li>
+        <li><b>Hvile (${restMin} min):</b> giver saftigere steg og lettere udskæring.</li>
+      </ul>
+      <hr>
+      <b>Termometer:</b> Mange går efter <b>65–68°C</b> i midten + hvile.
+    </div>
+  `;
+}
+
+/* =========================
+   AFSNIT 04.4 – Knapper
+   ========================= */
+function setServeNowPlus3h(){
+  const now = new Date();
+  const serve = new Date(now.getTime() + 3*60*60*1000);
+  $("serveTime").value = toLocalInputValue(serve);
+  $("startTime").value = "";
+  setStatus("", "Klar", "Sluttid sat til <b>nu + 3 timer</b>. Tryk <b>Lav plan</b>.");
+}
+function demo(){
+  $("type").value = "duck";
+  $("weight").value = 3.2;
+  $("restMin").value = 15;
+  $("mode").value = "standard";
+  setServeNowPlus3h();
+}
+function resetAll(){
+  $("type").value = "duck";
+  $("weight").value = 3.0;
+  $("restMin").value = 15;
+  $("mode").value = "standard";
+  $("startTime").value = "";
+  $("serveTime").value = "";
+  $("kpiTotal").textContent = "—";
+  $("kpiTotalSub").textContent = "—";
+  $("kpiTemps").textContent = "—";
+  $("kpiTempsSub").textContent = "—";
+  $("kpiStart").textContent = "—";
+  $("kpiTimelineSub").textContent = "—";
+  $("planWrap").innerHTML = `<div class="small">Tryk <b>Lav plan</b>, så får du en tydelig fase-oversigt her.</div>`;
+  $("howWrap").innerHTML = `<div class="small">Når du laver en plan, får du også en forklaring her, så det bliver let at forstå.</div>`;
+  setStatus("", "Klar", "Nulstillet. Sæt <b>sluttid</b> og tryk <b>Lav plan</b>.");
+}
+
+$("btnPlan").addEventListener("click", buildPlan);
+$("btnNow").addEventListener("click", setServeNowPlus3h);
+$("btnDemo").addEventListener("click", demo);
+$("btnReset").addEventListener("click", resetAll);
+
+// init
+setStatus("", "Klar", "Sæt <b>sluttid</b> (på bordet) eller <b>starttid</b>, og tryk <b>Lav plan</b>.");
+</script>
+
+</body>
+  </html>
