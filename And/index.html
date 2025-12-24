@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🍗 Julesteg-Master • Neon Planner</title>
+
+<style>
+:root{
+  --bg:#0b0f1a;--panel:#12172a;--line:rgba(255,255,255,.08);
+  --txt:#e8ebf1;--muted:#9aa0b4;
+  --cyan:#00e5ff;--vio:#7c7cff;--ok:#40ff9a;--warn:#ffd44d;--bad:#ff4d7d;
+  --r:18px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto;
+  background:
+    radial-gradient(1000px 500px at 10% 0,rgba(0,229,255,.1),transparent 60%),
+    radial-gradient(900px 500px at 90% 20%,rgba(124,124,255,.1),transparent 60%),
+    var(--bg);
+  color:var(--txt);
+}
+.wrap{max-width:1100px;margin:auto;padding:16px}
+header{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.logo{
+  width:46px;height:46px;border-radius:14px;
+  background:radial-gradient(circle at 30% 30%,#00e5ff,#7c7cff 60%);
+  box-shadow:0 0 20px rgba(0,229,255,.4)
+}
+h1{margin:0;font-size:18px}
+.sub{font-size:12px;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:380px 1fr;gap:14px;margin-top:14px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+.panel{
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+  border:1px solid var(--line);border-radius:var(--r);padding:14px
+}
+label{display:block;font-size:12px;color:var(--muted);margin-top:10px}
+input,select{
+  width:100%;padding:10px;border-radius:12px;
+  background:#0b0f1a;border:1px solid var(--line);color:var(--txt)
+}
+input:focus,select:focus{outline:none;border-color:var(--cyan)}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:500px){.row{grid-template-columns:1fr}}
+
+button{
+  margin-top:12px;padding:12px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(0,229,255,.3),rgba(124,124,255,.3));
+  border:1px solid var(--line);color:var(--txt);
+  font-weight:700;cursor:pointer
+}
+button:hover{filter:brightness(1.1)}
+
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:900px){.kpis{grid-template-columns:1fr}}
+.kpi{background:rgba(255,255,255,.03);border:1px solid var(--line);
+  border-radius:var(--r);padding:14px}
+.kpi .label{font-size:12px;color:var(--muted)}
+.kpi .val{font-size:18px;font-weight:800;margin-top:6px}
+
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{padding:8px;border-bottom:1px solid var(--line);font-size:13px}
+th{text-transform:uppercase;font-size:11px;color:var(--muted)}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;
+  background:rgba(0,229,255,.15);font-size:11px}
+.badge.warn{background:rgba(255,212,77,.2)}
+.badge.bad{background:rgba(255,77,125,.2)}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+<header>
+  <div class="logo"></div>
+  <div>
+    <h1>Julesteg-Master • Neon Planner</h1>
+    <div class="sub">And • Gås • Flæskesteg — regner baglæns & tjekker realisme</div>
+  </div>
+</header>
+
+<div class="grid">
+<section class="panel">
+<h2>Input</h2>
+
+<label>Type steg</label>
+<select id="type">
+  <option value="duck">🦆 And</option>
+  <option value="goose">🪿 Gås</option>
+  <option value="pork">🐖 Flæskesteg</option>
+</select>
+
+<label>Vægt (kg)</label>
+<input id="weight" type="number" step="0.1" value="3.0">
+
+<div class="row">
+<div>
+<label>Starttid (ovn)</label>
+<input id="start" type="datetime-local">
+</div>
+<div>
+<label>Sluttid (på bordet)</label>
+<input id="end" type="datetime-local">
+</div>
+</div>
+
+<label>Hviletid (min)</label>
+<input id="rest" type="number" value="15">
+
+<button onclick="plan()">🍽️ Lav intelligent plan</button>
+
+<p class="sub" id="status">Udfyld felter og tryk “Lav intelligent plan”</p>
+</section>
+
+<section>
+<div class="kpis">
+<div class="kpi"><div class="label">Stegetid</div><div class="val" id="kCook">—</div></div>
+<div class="kpi"><div class="label">Temperatur</div><div class="val" id="kTemp">—</div></div>
+<div class="kpi"><div class="label">Start i ovn</div><div class="val" id="kStart">—</div></div>
+</div>
+
+<div class="panel" style="margin-top:14px">
+<h2>Tidsplan</h2>
+<div id="tableWrap">—</div>
+</div>
+</section>
+</div>
+</div>
+
+<script>
+function fmt(d){
+  return d.toLocaleTimeString("da-DK",{hour:"2-digit",minute:"2-digit"});
+}
+
+function plan(){
+  const type=document.getElementById("type").value;
+  const w=+weight.value;
+  const rest=+rest.value;
+  const start=start.value?new Date(start.value):null;
+  const end=end.value?new Date(end.value):null;
+
+  let cookMin,temp;
+
+  if(type==="duck"){ cookMin=w*40+10; temp="160°C → 220°C"; }
+  if(type==="goose"){ cookMin=w*45+20; temp="170°C → 230°C"; }
+  if(type==="pork"){ cookMin=w*60; temp="180°C (sprød svær)"; }
+
+  cookMin=Math.round(cookMin/5)*5;
+
+  let cookStart=start;
+  let cookEnd=end?new Date(end.getTime()-rest*60000):null;
+
+  if(!cookStart && cookEnd){
+    cookStart=new Date(cookEnd.getTime()-cookMin*60000);
+  }
+
+  let warn="";
+  if(cookStart && cookEnd){
+    const diff=(cookEnd-cookStart)/60000-cookMin;
+    if(Math.abs(diff)>10){
+      warn="⚠️ Din tidsplan afviger fra anbefalet stegetid – brug termometer.";
+    }
+  }
+
+  kCook.textContent=cookMin+" min";
+  kTemp.textContent=temp;
+  kStart.textContent=cookStart?fmt(cookStart):"—";
+  status.textContent=warn||"Plan klar ✓";
+
+  const flip=new Date(cookStart.getTime()+cookMin/2*60000);
+  const boost=new Date(cookEnd.getTime()-20*60000);
+
+  let rows=`
+  <tr><th>Tid</th><th>Handling</th></tr>
+  <tr><td>${fmt(cookStart)}</td><td>Ind i ovn</td></tr>`;
+
+  if(type!=="pork"){
+    rows+=`<tr><td>${fmt(flip)}</td><td>Vend steg</td></tr>`;
+  }
+
+  rows+=`
+  <tr><td>${fmt(boost)}</td><td>Sprød-fase / slutboost</td></tr>
+  <tr><td>${fmt(cookEnd)}</td><td>Ud af ovn – hvile ${rest} min</td></tr>
+  <tr><td>${fmt(end)}</td><td>På bordet 🎉</td></tr>`;
+
+  tableWrap.innerHTML=`<table>${rows}</table>`;
+}
+</script>
+</body>
+</html>
